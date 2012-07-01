@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Encyclopedia of Life</title>
+    <script src="jquery-1.7.2.min.js"></script>
+    <script src="knockout-2.1.0.js"></script>
+	<script src="jquery.colorbox-min.js"></script>
+	<script src="d3.v2.min.js"></script>
+	<link rel="stylesheet" href="colorbox.css">
+	<script src="eol.js"></script>
+	<link rel="stylesheet" href="eol.css">
+</head>
+
+<body>
+    <div id="Header">
+        <div id="Search">
+            <form>
+                <input type="text" name="q" size="27" value="" placeholder="Search">
+                <a id="query_button" href="#" class="lg"><img src="http://passets-ec.pinterest.com/images/search.gif" alt=""/></a>
+            </form>
+        </div>
+    </div>
+
+	<div id="content">
+	</div>
+
+	<div id="hidden_popup" style="display:none">
+		<table id="popup" width="100%" height="360" border="0" cellpadding="0" cellspacing="0">
+			<tr><td align="center"><a id="full_size_image_link" href="" target="_blank"><img id="enlarged_img" src="" border="0"></a></td></tr>
+			<tr><td><a id="detail_link" target="_blank"><h2 id="filename"></h2><span id="name"></span></a></td></tr>
+		</table>
+	</div>
+</body>
+
+</html>
