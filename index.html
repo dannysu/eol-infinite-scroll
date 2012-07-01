@@ -28,7 +28,7 @@
                         <ul class="dropdown-menu">
                             <li><a href="#">Hierarchies</a></li>
                             <li class="divider"></li>
-                            <li><a href="#">Favourites</a></li>
+                            <li><a href="?collection=31473">Favourites</a></li>
                             <li class="divider"></li>
                             <li><a href="#">Continue Browsing</a></li>
                         </ul>
@@ -38,7 +38,7 @@
         </div>
     </div>
     <div class="title-navbar navbar-fixed-top">
-        <div class="title">
+        <div class="title" data-bind="style: { 'width': modalOpen() ? '195px' : '180px' }">
             <a href="index.html"><h2>Encyclopedia of Life</h2></a>
         </div>
     </div>
@@ -58,7 +58,7 @@
         </div>
     </div>
 
-    <div class="modal hide" data-bind="with: selectedItem">
+    <div class="modal fade hide" data-bind="with: selectedItem">
         <div class="modal-body">
             <div class="modal-image">
                 <a target="_blank" data-bind="attr: { href: fullSizeImage }"><img data-bind="attr: { src: largeImage }"></a>

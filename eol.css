@@ -77,7 +77,7 @@ body {
     padding-bottom: 15px;
 }
 
-.modal-backdrop {
+.modal-backdrop.fade.in {
     background-color: white;
     opacity: 0.95
 }

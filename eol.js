@@ -11,10 +11,14 @@
 
         self.smallImage = image;
         self.mediumImage = ko.computed(function() {
-            return self.smallImage.replace('_88_88', '_130_130');
+            var url = self.smallImage.replace('_88_88', '_130_130');
+            url = url.replace('_orig', '_130_130');
+            return url;
         });
         self.largeImage = ko.computed(function() {
-            return self.smallImage.replace('_88_88', '_580_360');
+            var url = self.smallImage.replace('_88_88', '_580_360');
+            url = url.replace('_orig', '_580_360');
+            return url;
         });
         self.fullSizeImage = ko.computed(function() {
             return self.smallImage.replace('_88_88', '');
@@ -56,11 +60,16 @@
             self.page += 1;
             console.log("loading " + self.page);
 
+            var url = 'http://dannysu.com/eol/api.php?q='+self.search_term+'&page='+self.page+'&callback=?';
+            if (self.collection_id) {
+                url = 'http://eol.org/api/collections/1.0/'+self.collection_id+'.json?callback=?';
+            }
+
             $.ajax({
-                url: 'http://dannysu.com/eol/api.php?q='+self.search_term+'&page='+self.page+'&callback=?',
+                url: url,
                 success: function(data) {
-                    self.max_items = data.total_count;
-                    self.addResults(data.items);
+                    self.max_items = data.total_items;
+                    self.addResults(data.collection_items);
                     self.isLoading = false;
                 },
                 dataType: 'jsonp'
@@ -85,7 +94,10 @@
             var div_container = this.div_container;
 
             $.each(items, function(index, value) {
-                var life = new LifeViewModel(value.link, value.image, value.filename, value.name);
+                var link = typeof value.link !== 'undefined' ? value.link : '/data_objects/' + value.object_id;
+                var filename = typeof value.filename !== 'undefined' ? value.filename : value.name;
+                var name = typeof value.filename !== 'undefined' ? value.name : '';
+                var life = new LifeViewModel(link, value.source, filename, name);
 
                 var row = Math.floor((index_offset + index) / columns);
                 var column = (index_offset + index) % columns;
@@ -103,6 +115,7 @@
         }
 
         self.search_term = "*";
+        self.collection_id = null;
 
         self.width = 0;
         self.max_items = -1;
@@ -111,9 +124,10 @@
         self.div_width = 160;
         self.top_margin = 50;
 
-        self.initialize = function(width, search_term) {
+        self.initialize = function(width, search_term, collection_id) {
             self.width = width;
             self.search_term = search_term;
+            self.collection_id = collection_id;
             self.padWithLoadingCells();
         }
 
@@ -198,24 +212,29 @@
 
     var query = window.location.search;
     var search_term = "*";
+    var collection_id = null;
     if (query.indexOf("?q=") >= 0) {
         search_term = query.substring(query.indexOf("?q=") + "?q=".length);
+    } else if (query.indexOf("?collection=") >= 0) {
+        collection_id = query.substring(query.indexOf("?collection=") + "?collection=".length);
     }
 
-    viewModel.initialize($(window).width(), search_term);
+    viewModel.initialize($(window).width(), search_term, collection_id);
 
     // Start by fetching 3 pages
     viewModel.getNextPage(true);
-    viewModel.getNextPage(true);
-    viewModel.getNextPage(true);
+    if (collection_id == null) {
+        viewModel.getNextPage(true);
+        viewModel.getNextPage(true);
 
-	$(window).scroll(function() {
-		if ($(window).scrollTop() >= $(document).height() - $(window).height() * 3) {
-			if (viewModel.getNextPage()) {
-				viewModel.getNextPage(true);
-				viewModel.getNextPage(true);
-			}
-		}
-	});
+        $(window).scroll(function() {
+            if ($(window).scrollTop() >= $(document).height() - $(window).height() * 3) {
+                if (viewModel.getNextPage()) {
+                    viewModel.getNextPage(true);
+                    viewModel.getNextPage(true);
+                }
+            }
+        });
+    }
 
 })();
