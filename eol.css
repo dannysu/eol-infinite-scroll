@@ -6,6 +6,14 @@ body {
 }
 
 .cell {
+    position: absolute;
+    width: 160px;
+    height: 160px;
+}
+
+.life, .loading {
+    width: 140px;
+    margin: 0 auto;
 }
 
 .life img {
@@ -14,7 +22,13 @@ body {
     -webkit-box-shadow:0 3px 10px #888;
     width: 130px;
     height: 130px;
-    margin: 0 auto;
+}
+
+.loading img {
+    border:5px solid #fcfafa;
+	-moz-box-shadow:0 3px 10px #888;
+    -webkit-box-shadow:0 3px 10px #888;
+    padding: 57px;
 }
 
 .navbar {
@@ -48,6 +62,24 @@ body {
 
 .navbar .nav > li > a {
     padding: 9px 10px 9px;
+}
+
+.modal-body {
+    max-height: 600px;
+}
+
+.modal-body a {
+    text-decoration: none;
+}
+
+.modal-image {
+    text-align: center;
+    padding-bottom: 15px;
+}
+
+.modal-backdrop {
+    background-color: white;
+    opacity: 0.95
 }
 
 /* http://stackoverflow.com/questions/9550738/bootstrap-navbar-search-icon */

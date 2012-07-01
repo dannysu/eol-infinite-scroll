@@ -1,200 +1,221 @@
-var layout = {
+(function() {
+    var viewModel = new MainPageViewModel();
 
-    count: 0,
-    div_width: 160,
-    div_container: '',
-    max_items: -1,
-    top_margin: 50,
+    function LifeViewModel(link, image, filename, name) {
+        var self = this;
 
-    getNumColumns: function(width) {
-        return Math.floor(width / this.div_width);
-    },
-
-    getLeftMargin: function(width, columns) {
-        return (width - (columns * this.div_width)) / 2;
-    },
-
-    initialize: function(container, width) {
-        this.div_container = container;
-        this.padWithLoadingCells(width);
-    },
-
-    addToLayout: function(width, items) {
-
-        var columns = this.getNumColumns(width);
-        var left_margin = this.getLeftMargin(width, columns);
-        var top_margin = this.top_margin;
-        var index_offset = this.count;
-        var div_width = this.div_width;
-        var div_container = this.div_container;
-
-        $.each(items, function(index, value) {
-            var image = value.image;
-            image = image.replace('_88_88', '_130_130');
-
-            var id = value.link.replace('/data_objects/', '');
-
-            var filename = value.filename;
-            var name = value.name;
-
-            var row = Math.floor((index_offset + index) / columns);
-            var column = (index_offset + index) % columns;
-
-            var div_left = left_margin + column * div_width;
-            var div_top = top_margin + row * div_width;
-
-            $(div_container).append('<div id="cell'+id+'" class="cell life" style="position:absolute;left:'+div_left+'px;top:'+div_top+'px;width:'+div_width+'px;height:'+div_width+'px;"><img id="'+id+'" src="'+image+'" data-filename="'+filename+'" data-name="'+name+'"></div>');
-
-            $('#cell'+id).click(function(eventObject) {
-                var element = eventObject.toElement;
-                var img = $(element).attr('src').replace('_130_130', '_580_360');
-                var full_size_img = img.replace('_580_360', '');
-                $('#full_size_image_link').attr('href', full_size_img);
-                $('#enlarged_img').attr('src', '');
-                $('#enlarged_img').attr('src', img);
-                $('#filename').html($(element).attr('data-filename'));
-                $('#name').html($(element).attr('data-name'));
-                $('#detail_link').attr('href', 'http://eol.org/data_objects/'+$(element).attr('id'));
-
-                $.colorbox({
-                    transition: 'none',
-                    width: 580,
-                    height: 600,
-                    inline: true,
-                    href: '#popup'
-                });
-            });
-
+        self.link = link;
+        self.id = ko.computed(function() {
+            return self.link.replace('/data_objects/', '');
         });
 
-        this.count += items.length;
-
-        this.padWithLoadingCells(width);
-    },
-
-    doLayout: function(width) {
-        var columns = this.getNumColumns(width);
-        var left_margin = this.getLeftMargin(width, columns);
-        var top_margin = this.top_margin;
-        var div_width = this.div_width;
-
-        $('.cell.life').each(function(index) {
-            var row = Math.floor(index / columns);
-            var column = index % columns;
-
-            var div_left = left_margin + column * div_width;
-            var div_top = top_margin + row * div_width;
-
-            $(this).css("left", div_left);
-            $(this).css("top", div_top);
+        self.smallImage = image;
+        self.mediumImage = ko.computed(function() {
+            return self.smallImage.replace('_88_88', '_130_130');
+        });
+        self.largeImage = ko.computed(function() {
+            return self.smallImage.replace('_88_88', '_580_360');
+        });
+        self.fullSizeImage = ko.computed(function() {
+            return self.smallImage.replace('_88_88', '');
         });
 
-        this.padWithLoadingCells(width);
-    },
+        self.filename = filename;
+        self.name = name;
 
-    padWithLoadingCells: function(width) {
-        if (this.max_items >= 0 && this.count >= this.max_items) {
-            $('.loading').each(function(index) {
-                $(this).css("display", "none");
-            });
-            return;
-        }
-
-        var columns = this.getNumColumns(width);
-        var start_col = this.count % columns;
-        var num_loading = columns - start_col;
-        var last_row = Math.floor(this.count / columns);
-
-        // Make the number of required loading cells if there isn't enough
-        var existing = $('.loading').length;
-        for (var i = 0; i < (columns - existing); i++) {
-            $(this.div_container).append('<div class="cell loading" style="position:absolute;display:none;"><img src="loading.gif"></div>');
-        }
-
-        // Figure out how to layout the loading cells based on number of items already loaded
-        var left_margin = this.getLeftMargin(width, columns);
-        var top_margin = this.top_margin;
-        var div_width = this.div_width;
-
-        $('.loading').each(function(index) {
-            if (start_col < columns) {
-                var div_left = left_margin + start_col * div_width;
-                var div_top = top_margin + last_row * div_width;
-
-                $(this).css("left", div_left);
-                $(this).css("top", div_top);
-                $(this).css("display", "block");
-
-                start_col++;
-            } else {
-                $(this).css("display", "none");
-            }
-        });
+        self.left = ko.observable(0);
+        self.top = ko.observable(0);
     }
 
-};
+    function LoadingViewModel(left, top) {
+        var self = this;
+        self.left = ko.observable(left);
+        self.top = ko.observable(top);
+    }
 
-function getNextPage(force_load) {
-	force_load = typeof force_load !== 'undefined' ? force_load : false;
+    function MainPageViewModel() {
+        var self = this;
 
-	if (loading && !force_load) {
-		return false;
-	}
+        self.lives = ko.observableArray([]);
+        self.loading = ko.observableArray([]);
 
-	page += 1;
+        self.selectedItem = ko.observable();
+        self.selectItem = function(item) {
+            self.selectedItem(item);
+        }
 
-	$.ajax({
-		url: 'http://dannysu.com/eol/api.php?q='+search_term+'&page='+page+'&callback=?',
-		success: function(data) {
-            layout.max_items = data.total_count;
-            layout.addToLayout($(document).width(), data.items);
+        self.page = 0;
+        self.isLoading = false;
+        self.getNextPage = function(force_load) {
+            force_load = typeof force_load !== 'undefined' ? force_load : false;
 
-			loading = false;
-		},
-		dataType: 'jsonp'
-	});
+            if (self.isLoading && !force_load) {
+                return false;
+            }
 
-	loading = true;
-	return true;
-}
+            self.page += 1;
+            console.log("loading " + self.page);
 
-var page = 0;
-var loading = false;
+            $.ajax({
+                url: 'http://dannysu.com/eol/api.php?q='+self.search_term+'&page='+self.page+'&callback=?',
+                success: function(data) {
+                    self.max_items = data.total_count;
+                    self.addResults(data.items);
+                    self.isLoading = false;
+                },
+                dataType: 'jsonp'
+            });
 
-var current_width = 0;
-var search_term = "*";
+            self.isLoading = true;
+            return true;
+        }
 
-$(document).ready(function() {
-    $('#content').css('height', $(window).height() + 1);
+        self.getNumColumns = function() {
+            return Math.floor(self.width / self.div_width);
+        }
 
-    layout.initialize('#content', $(document).width());
+        self.getLeftMargin = function(columns) {
+            return (self.width - (columns * self.div_width)) / 2;
+        }
+
+        self.addResults = function(items) {
+            var columns = self.getNumColumns();
+            var left_margin = self.getLeftMargin(columns);
+            var index_offset = self.lives().length;
+            var div_container = this.div_container;
+
+            $.each(items, function(index, value) {
+                var life = new LifeViewModel(value.link, value.image, value.filename, value.name);
+
+                var row = Math.floor((index_offset + index) / columns);
+                var column = (index_offset + index) % columns;
+
+                var div_left = left_margin + column * self.div_width;
+                var div_top = self.top_margin + row * self.div_width;
+
+                life.left(div_left);
+                life.top(div_top);
+
+                self.lives.push(life);
+            });
+
+            self.padWithLoadingCells();
+        }
+
+        self.search_term = "*";
+
+        self.width = 0;
+        self.max_items = -1;
+
+        // TODO: Can this be moved out to the view to connect to ViewModel?
+        self.div_width = 160;
+        self.top_margin = 50;
+
+        self.initialize = function(width, search_term) {
+            self.width = width;
+            self.search_term = search_term;
+            self.padWithLoadingCells();
+        }
+
+        self.modalOpen = ko.observable(false);
+
+        self.resize = function(width) {
+            if (self.width == width || self.modalOpen()) {
+                return;
+            }
+            self.width = width;
+
+            var columns = self.getNumColumns();
+            var left_margin = self.getLeftMargin(columns);
+
+            $.each(self.lives(), function(index, value) {
+                var row = Math.floor(index / columns);
+                var column = index % columns;
+
+                var div_left = left_margin + column * self.div_width;
+                var div_top = self.top_margin + row * self.div_width;
+
+                value.left(div_left);
+                value.top(div_top);
+            });
+
+            self.padWithLoadingCells();
+        }
+
+        self.padWithLoadingCells = function() {
+            self.loading.removeAll();
+
+            if (self.max_items >= 0 && self.lives().length >= self.max_items) {
+                return;
+            }
+
+            var columns = self.getNumColumns();
+            var start_col = self.lives().length % columns;
+            var num_loading = columns - start_col;
+            var last_row = Math.floor(self.lives().length / columns);
+
+            // Figure out how to layout the loading cells based on number of items already loaded
+            var left_margin = this.getLeftMargin(columns);
+            for (var i = 0; i < num_loading; i++) {
+                var div_left = left_margin + (start_col + i) * self.div_width;
+                var div_top = self.top_margin + last_row * self.div_width;
+
+                self.loading.push(new LoadingViewModel(div_left, div_top));
+            }
+        }
+    }
+
+    // "with: someExpression" is equivalent to "template: { if: someExpression, data: someExpression }"
+    ko.bindingHandlers['with'] = {
+        makeTemplateValueAccessor: function(valueAccessor) {
+            return function() { var value = valueAccessor(); return { 'if': value, 'data': value, 'templateEngine': ko.nativeTemplateEngine.instance } };
+        },
+        'init': function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+            return ko.bindingHandlers['template']['init'](element, ko.bindingHandlers['with'].makeTemplateValueAccessor(valueAccessor));
+        },
+        'update': function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+            if (viewModel.selectedItem()) {
+                $(element).modal('show');
+                viewModel.modalOpen(true);
+
+                $(element).on('hidden', function() {
+                    viewModel.modalOpen(false);
+                    viewModel.resize($(document).width());
+                    viewModel.selectedItem(null);
+                });
+            }
+            return ko.bindingHandlers['template']['update'](element, ko.bindingHandlers['with'].makeTemplateValueAccessor(valueAccessor), allBindingsAccessor, viewModel, bindingContext);
+        }
+    };
+
+    ko.applyBindings(viewModel);
+
+    // Notify view model of browser resize so that the layout can be responsive
+    // 20px to account for scrollbar
+    $(window).resize(function() {
+        viewModel.resize($(document).width() - 20);
+    });
 
     var query = window.location.search;
+    var search_term = "*";
     if (query.indexOf("?q=") >= 0) {
         search_term = query.substring(query.indexOf("?q=") + "?q=".length);
-    } else {
-        search_term = "*";
     }
 
-	getNextPage(true);
-	getNextPage(true);
-	getNextPage(true);
+    viewModel.initialize($(window).width(), search_term);
+
+    // Start by fetching 3 pages
+    viewModel.getNextPage(true);
+    viewModel.getNextPage(true);
+    viewModel.getNextPage(true);
 
 	$(window).scroll(function() {
 		if ($(window).scrollTop() >= $(document).height() - $(window).height() * 3) {
-			if (getNextPage()) {
-				getNextPage(true);
-				getNextPage(true);
+			if (viewModel.getNextPage()) {
+				viewModel.getNextPage(true);
+				viewModel.getNextPage(true);
 			}
 		}
 	});
 
-    current_width = $(document).width();
-    $(window).resize(function() {
-        if (current_width != $(document).width()) {
-            current_width = $(document).width();
-
-            layout.doLayout(current_width);
-        }
-    });
-});
+})();

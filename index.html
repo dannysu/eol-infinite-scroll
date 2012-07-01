@@ -8,13 +8,10 @@
     <script src="bootstrap/js/bootstrap.min.js"></script>
     <link rel="stylesheet" type="text/css" href="journal.bootstrap.min.css">
     <link href='http://fonts.googleapis.com/css?family=Norican' rel='stylesheet' type='text/css'>
-	<script src="jquery.colorbox-min.js"></script>
-    <link rel="stylesheet" href="colorbox.css">
-	<script src="eol.js"></script>
 	<link rel="stylesheet" href="eol.css">
 </head>
 
-<body>
+<body data-bind="style: { 'overflow-y': modalOpen() ? 'hidden' : 'scroll' }">
     <div class="navbar navbar-fixed-top">
         <div class="navbar-inner">
             <div class="container">
@@ -33,7 +30,7 @@
                             <li class="divider"></li>
                             <li><a href="#">Favourites</a></li>
                             <li class="divider"></li>
-                            <li><a href="#">Save Progress</a></li>
+                            <li><a href="#">Continue Browsing</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -46,15 +43,34 @@
         </div>
     </div>
 
-	<div id="content">
-	</div>
+    <div data-bind="foreach: lives">
+        <div class="cell" data-bind="style: { left: (left() + 'px'), top: (top() + 'px') }, click: $root.selectItem">
+            <div class="life">
+                <img data-bind="attr: { src: mediumImage }">
+            </div>
+        </div>
+    </div>
+    <div data-bind="foreach: loading">
+        <div class="cell" data-bind="style: { left: (left() + 'px'), top: (top() + 'px') }">
+            <div class="loading">
+                <img src="loading.gif">
+            </div>
+        </div>
+    </div>
 
-	<div id="hidden_popup" style="display:none">
-		<table id="popup" width="100%" height="360" border="0" cellpadding="0" cellspacing="0">
-			<tr><td align="center"><a id="full_size_image_link" href="" target="_blank"><img id="enlarged_img" src="" border="0"></a></td></tr>
-			<tr><td><a id="detail_link" target="_blank"><h2 id="filename"></h2><span id="name"></span></a></td></tr>
-		</table>
-	</div>
+    <div class="modal hide" data-bind="with: selectedItem">
+        <div class="modal-body">
+            <div class="modal-image">
+                <a target="_blank" data-bind="attr: { href: fullSizeImage }"><img data-bind="attr: { src: largeImage }"></a>
+            </div>
+            <a target="_blank" data-bind="attr: { href: 'http://eol.org'+link }">
+                <h1 data-bind="text: filename"></h1>
+                <h3 data-bind="text: name"></h3>
+            </a>
+        </div>
+    </div>
+
+	<script src="eol.js"></script>
 </body>
 
 </html>
