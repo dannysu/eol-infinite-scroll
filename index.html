@@ -5,20 +5,44 @@
 	<title>Encyclopedia of Life</title>
     <script src="jquery-1.7.2.min.js"></script>
     <script src="knockout-2.1.0.js"></script>
+    <script src="bootstrap/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="journal.bootstrap.min.css">
+    <link href='http://fonts.googleapis.com/css?family=Norican' rel='stylesheet' type='text/css'>
 	<script src="jquery.colorbox-min.js"></script>
-	<script src="d3.v2.min.js"></script>
-	<link rel="stylesheet" href="colorbox.css">
+    <link rel="stylesheet" href="colorbox.css">
 	<script src="eol.js"></script>
 	<link rel="stylesheet" href="eol.css">
 </head>
 
 <body>
-    <div id="Header">
-        <div id="Search">
-            <form>
-                <input type="text" name="q" size="27" value="" placeholder="Search">
-                <a id="query_button" href="#" class="lg"><img src="http://passets-ec.pinterest.com/images/search.gif" alt=""/></a>
-            </form>
+    <div class="navbar navbar-fixed-top">
+        <div class="navbar-inner">
+            <div class="container">
+                <div class="nav">
+                    <form class="navbar-search pull-left">
+                        <input type="text" class="search-query span2" name="q" placeholder="Search">
+                        <div class="icon-search"></div>
+                    </form>
+                </div>
+
+                <ul class="nav menu pull-right">
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Menu <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#">Hierarchies</a></li>
+                            <li class="divider"></li>
+                            <li><a href="#">Favourites</a></li>
+                            <li class="divider"></li>
+                            <li><a href="#">Save Progress</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="title-navbar navbar-fixed-top">
+        <div class="title">
+            <a href="index.html"><h2>Encyclopedia of Life</h2></a>
         </div>
     </div>
 
