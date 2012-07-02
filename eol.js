@@ -235,6 +235,7 @@
         viewModel.page = parseInt(localStorage.furthestPage);
     }
 
+    viewModel.furthestPage = parseInt(localStorage.furthestPage);
     viewModel.initialize($(window).width(), search_term, collection_id);
 
     // Start by fetching 3 pages
