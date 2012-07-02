@@ -177,6 +177,12 @@
                 self.loading.push(new LoadingViewModel(div_left, div_top));
             }
         }
+
+        self.contentHeight = ko.computed(function() {
+            var columns = self.getNumColumns();
+            var rows = (self.lives().length + self.loading().length) / columns;
+            return rows * self.div_width;
+        });
     }
 
     // "with: someExpression" is equivalent to "template: { if: someExpression, data: someExpression }"
@@ -227,8 +233,8 @@
         viewModel.getNextPage(true);
         viewModel.getNextPage(true);
 
-        $(window).scroll(function() {
-            if ($(window).scrollTop() >= $(document).height() - $(window).height() * 3) {
+        $(document).scroll(function() {
+            if ($(document).scrollTop() >= $(document).height() - $(window).height() * 3) {
                 if (viewModel.getNextPage()) {
                     viewModel.getNextPage(true);
                     viewModel.getNextPage(true);

@@ -43,7 +43,7 @@
         </div>
     </div>
 
-    <div data-bind="foreach: lives">
+    <div data-bind="foreach: lives, style: { height: contentHeight()+'px' }">
         <div class="cell" data-bind="style: { left: (left() + 'px'), top: (top() + 'px') }, click: $root.selectItem">
             <div class="life">
                 <img data-bind="attr: { src: mediumImage }">
