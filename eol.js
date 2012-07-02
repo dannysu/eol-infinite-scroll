@@ -58,7 +58,6 @@
             }
 
             self.page += 1;
-            console.log("loading " + self.page);
 
             var url = 'http://dannysu.com/eol/api.php?q='+self.search_term+'&page='+self.page+'&callback=?';
             if (self.collection_id) {
