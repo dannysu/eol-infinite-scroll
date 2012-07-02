@@ -72,7 +72,7 @@
                     self.addResults(data.collection_items);
                     self.isLoading = false;
 
-                    if (self.collection_id == null && self.page > self.furthestPage) {
+                    if (self.collection_id == null && self.search_term == "*" && self.page > self.furthestPage) {
                         self.furthestPage = self.page;
                         localStorage.furthestPage = self.furthestPage;
                     }
