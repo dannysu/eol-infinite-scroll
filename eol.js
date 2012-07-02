@@ -229,10 +229,10 @@
     } else if (query.indexOf("?collection=") >= 0) {
         collection_id = query.substring(query.indexOf("?collection=") + "?collection=".length);
     } else if (query.indexOf("?continue=1") >= 0) {
-        viewModel.page = (localStorage.furthestPage - 4);
+        viewModel.page = (parseInt(localStorage.furthestPage) - 6);
     } else if (query.indexOf("?reset=") >= 0) {
         localStorage.furthestPage = query.substring(query.indexOf("?reset=") + "?reset=".length);
-        viewModel.page = localStorage.furthestPage;
+        viewModel.page = parseInt(localStorage.furthestPage);
     }
 
     viewModel.initialize($(window).width(), search_term, collection_id);
