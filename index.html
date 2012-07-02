@@ -28,7 +28,7 @@
                         <ul class="dropdown-menu">
                             <li><a href="#">Hierarchies</a></li>
                             <li class="divider"></li>
-                            <li><a href="?collection=31473">Favourites</a></li>
+                            <li><a href="?collection=31473">My Collection</a></li>
                             <li class="divider"></li>
                             <li><a href="#">Continue Browsing</a></li>
                         </ul>
@@ -68,9 +68,19 @@
                 <h3 data-bind="text: name"></h3>
             </a>
         </div>
+        <div class="modal-footer" data-bind="style: { display: $root.collection_id ? 'none' : 'block' }">
+            <form action="http://eol.org/collection_items" target="crossDomainForm" method="post">
+                <input name="collection_item[object_id]" type="hidden" data-bind="value: id()">
+                <input name="collection_item[object_type]" type="hidden" value="DataObject">
+                <input name="collection_id[]" type="hidden" value="31473">
+                <input class="btn btn-primary" type="submit" value="Collect!">
+            </form>
+        </div>
     </div>
 
-	<script src="eol.js"></script>
+    <iframe class="crossDomainForm" name="crossDomainForm">
+    </iframe>
+    <script src="eol.js"></script>
 </body>
 
 </html>

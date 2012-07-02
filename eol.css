@@ -31,6 +31,10 @@ body {
     padding: 57px;
 }
 
+.crossDomainForm {
+    display: none;
+}
+
 .navbar {
     min-width: 600px;
 }
@@ -70,6 +74,14 @@ body {
 
 .modal-body a {
     text-decoration: none;
+}
+
+.modal-footer {
+    padding: 0px 15px 15px 15px;
+}
+
+.modal-footer form {
+    margin: 0;
 }
 
 .modal-image {
