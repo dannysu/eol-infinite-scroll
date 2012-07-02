@@ -221,6 +221,11 @@
         viewModel.resize($(document).width() - 20);
     });
 
+    var hasPageStored = false;
+    if (localStorage.getItem("furthestPage") != null) {
+        hasPageStored = true;
+    }
+
     var query = window.location.search;
     var search_term = "*";
     var collection_id = null;
@@ -228,14 +233,16 @@
         search_term = query.substring(query.indexOf("?q=") + "?q=".length);
     } else if (query.indexOf("?collection=") >= 0) {
         collection_id = query.substring(query.indexOf("?collection=") + "?collection=".length);
-    } else if (query.indexOf("?continue=1") >= 0) {
+    } else if (query.indexOf("?continue=1") >= 0 && hasPageStored) {
         viewModel.page = (parseInt(localStorage.furthestPage) - 6);
-    } else if (query.indexOf("?reset=") >= 0) {
+    } else if (query.indexOf("?reset=") >= 0 && hasPageStored) {
         localStorage.furthestPage = query.substring(query.indexOf("?reset=") + "?reset=".length);
         viewModel.page = parseInt(localStorage.furthestPage);
     }
 
-    viewModel.furthestPage = parseInt(localStorage.furthestPage);
+    if (hasPageStored) {
+        viewModel.furthestPage = parseInt(localStorage.furthestPage);
+    }
     viewModel.initialize($(window).width(), search_term, collection_id);
 
     // Start by fetching 3 pages
