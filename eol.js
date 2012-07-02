@@ -49,6 +49,7 @@
         }
 
         self.page = 0;
+        self.furthestPage = 0;
         self.isLoading = false;
         self.getNextPage = function(force_load) {
             force_load = typeof force_load !== 'undefined' ? force_load : false;
@@ -70,6 +71,11 @@
                     self.max_items = data.total_items;
                     self.addResults(data.collection_items);
                     self.isLoading = false;
+
+                    if (self.page > self.furthestPage) {
+                        self.furthestPage = self.page;
+                        localStorage.furthestPage = self.furthestPage;
+                    }
                 },
                 dataType: 'jsonp'
             });
@@ -222,6 +228,8 @@
         search_term = query.substring(query.indexOf("?q=") + "?q=".length);
     } else if (query.indexOf("?collection=") >= 0) {
         collection_id = query.substring(query.indexOf("?collection=") + "?collection=".length);
+    } else if (query.indexOf("?continue=1") >= 0) {
+        viewModel.page = (localStorage.furthestPage - 4);
     }
 
     viewModel.initialize($(window).width(), search_term, collection_id);
