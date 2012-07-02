@@ -201,6 +201,7 @@
             url += '&filename='+encodeURI(life.filename);
             url += '&name='+encodeURI(life.name);
             url += '&action=' + action;
+            url += '&pass=' + localStorage.password;
             url += '&callback=?';
             $.ajax({
                 url: url,
