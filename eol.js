@@ -235,9 +235,10 @@
         collection_id = query.substring(query.indexOf("?collection=") + "?collection=".length);
     } else if (query.indexOf("?continue=1") >= 0 && hasPageStored) {
         viewModel.page = Math.min(0, (parseInt(localStorage.furthestPage) - 6));
-    } else if (query.indexOf("?reset=") >= 0 && hasPageStored) {
+    } else if (query.indexOf("?reset=") >= 0) {
         localStorage.furthestPage = query.substring(query.indexOf("?reset=") + "?reset=".length);
         viewModel.page = parseInt(localStorage.furthestPage);
+        hasPageStored = true;
     }
 
     if (hasPageStored) {
