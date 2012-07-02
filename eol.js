@@ -62,7 +62,11 @@
 
             var url = 'http://dannysu.com/eol/api.php?q='+self.search_term+'&page='+self.page+'&callback=?';
             if (self.collection_id != null) {
-                url = 'http://eol.org/api/collections/1.0/'+self.collection_id+'.json?per_page=25&page='+self.page+'&callback=?';
+                if (self.collection_id == '31473') {
+                    url = 'http://dannysu.com/eol/fav.php?page='+self.page;
+                } else {
+                    url = 'http://eol.org/api/collections/1.0/'+self.collection_id+'.json?per_page=25&page='+self.page+'&callback=?';
+                }
             }
 
             $.ajax({
@@ -188,6 +192,35 @@
             var rows = (self.lives().length + self.loading().length) / columns;
             return rows * self.div_width;
         });
+
+        self.collect = function(life, click, action) {
+            var action = typeof action !== 'undefined' ? action : 'add';
+            var url = 'http://dannysu.com/eol/fav.php?';
+            url += 'link='+encodeURI(life.link);
+            url += '&image='+encodeURI(life.smallImage);
+            url += '&filename='+encodeURI(life.filename);
+            url += '&name='+encodeURI(life.name);
+            url += '&action=' + action;
+            url += '&callback=?';
+            $.ajax({
+                url: url,
+                success: function(data) {
+                    if (data.success) {
+                        self.statusMessage('Success!');
+                    } else {
+                        self.statusMessage('There was an error.');
+                    }
+                },
+                dataType: 'jsonp'
+            });
+
+            self.statusMessage('Please wait...');
+        }
+        self.statusMessage = ko.observable('');
+
+        self.remove = function() {
+            self.collect(self.selectedItem(), null, 'remove');
+        }
     }
 
     // "with: someExpression" is equivalent to "template: { if: someExpression, data: someExpression }"
@@ -202,6 +235,7 @@
             if (viewModel.selectedItem()) {
                 $(element).modal('show');
                 viewModel.modalOpen(true);
+                viewModel.statusMessage('');
 
                 $(element).on('hidden', function() {
                     viewModel.modalOpen(false);
