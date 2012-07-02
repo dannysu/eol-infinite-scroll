@@ -61,8 +61,8 @@
             self.page += 1;
 
             var url = 'http://dannysu.com/eol/api.php?q='+self.search_term+'&page='+self.page+'&callback=?';
-            if (self.collection_id) {
-                url = 'http://eol.org/api/collections/1.0/'+self.collection_id+'.json?callback=?';
+            if (self.collection_id != null) {
+                url = 'http://eol.org/api/collections/1.0/'+self.collection_id+'.json?per_page=25&page='+self.page+'&callback=?';
             }
 
             $.ajax({
@@ -72,7 +72,7 @@
                     self.addResults(data.collection_items);
                     self.isLoading = false;
 
-                    if (self.page > self.furthestPage) {
+                    if (self.collection_id == null && self.page > self.furthestPage) {
                         self.furthestPage = self.page;
                         localStorage.furthestPage = self.furthestPage;
                     }
@@ -230,24 +230,25 @@
         collection_id = query.substring(query.indexOf("?collection=") + "?collection=".length);
     } else if (query.indexOf("?continue=1") >= 0) {
         viewModel.page = (localStorage.furthestPage - 4);
+    } else if (query.indexOf("?reset=") >= 0) {
+        localStorage.furthestPage = query.substring(query.indexOf("?reset=") + "?reset=".length);
+        viewModel.page = localStorage.furthestPage;
     }
 
     viewModel.initialize($(window).width(), search_term, collection_id);
 
     // Start by fetching 3 pages
     viewModel.getNextPage(true);
-    if (collection_id == null) {
-        viewModel.getNextPage(true);
-        viewModel.getNextPage(true);
+    viewModel.getNextPage(true);
+    viewModel.getNextPage(true);
 
-        $(document).scroll(function() {
-            if ($(document).scrollTop() >= $(document).height() - $(window).height() * 3) {
-                if (viewModel.getNextPage()) {
-                    viewModel.getNextPage(true);
-                    viewModel.getNextPage(true);
-                }
+    $(document).scroll(function() {
+        if ($(document).scrollTop() >= $(document).height() - $(window).height() * 3) {
+            if (viewModel.getNextPage()) {
+                viewModel.getNextPage(true);
+                viewModel.getNextPage(true);
             }
-        });
-    }
+        }
+    });
 
 })();
