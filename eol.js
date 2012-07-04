@@ -1,6 +1,4 @@
 (function() {
-    var viewModel = new MainPageViewModel();
-
     function LifeViewModel(link, image, filename, name) {
         var self = this;
 
@@ -37,8 +35,90 @@
         self.top = ko.observable(top);
     }
 
+    function Layout() {
+        var self = this;
+
+        self.width = 0;
+
+        // TODO: Can this be moved out to the view to connect to ViewModel?
+        self.div_width = 160;
+        self.top_margin = 50;
+
+        self.columns = 0;
+        self.getNumColumns = function() {
+            return Math.floor(self.width / self.div_width);
+        }
+
+        self.left_margin = 0;
+        self.getLeftMargin = function(columns) {
+            return (self.width - (columns * self.div_width)) / 2;
+        }
+
+        self.resize = function(width) {
+            if (self.width == width) {
+                return;
+            }
+            self.width = width;
+            self.columns = self.getNumColumns();
+            self.left_margin = self.getLeftMargin(self.columns);
+        }
+
+        self.position = 0;
+        self.updatePosition = function(position) {
+            self.position = position;
+        }
+
+        self.getCurrentRow = function() {
+            var row = Math.floor((self.position - self.top_margin) / self.div_width);
+            return Math.max(0, row);
+        }
+
+        self.getLastRow = function(numItems) {
+            return Math.floor(numItems / self.columns);
+        }
+
+        self.getCurrentPage = function() {
+            var columns = self.getNumColumns();
+            var num_items = columns * (self.getCurrentRow() + 1);
+            var page = Math.ceil(num_items / 25);
+            return page;
+        }
+
+        self.getPositionForItemIndex = function(index, updateFn) {
+            var row = Math.floor(index / self.columns);
+            var column = index % self.columns;
+
+            var div_left = self.left_margin + column * self.div_width;
+            var div_top = self.top_margin + row * self.div_width;
+
+            updateFn(div_left, div_top);
+        }
+
+        self.getPositionForRowColumn = function(row, col, updateFn) {
+            var div_left = self.left_margin + col * self.div_width;
+            var div_top = self.top_margin + row * self.div_width;
+
+            updateFn(div_left, div_top);
+        }
+
+        self.getContentHeight = function(numItems) {
+            var rows = numItems / self.columns;
+            return rows * self.div_width;
+        }
+
+        self.getLastColumn = function(numItems) {
+            return numItems % self.columns;
+        }
+
+        self.getNumPadding = function(numItems) {
+            return self.columns - self.getLastColumn(numItems);
+        }
+    }
+
     function MainPageViewModel() {
         var self = this;
+
+        self.layout = new Layout();
 
         self.lives = ko.observableArray([]);
         self.loading = ko.observableArray([]);
@@ -83,19 +163,8 @@
             return true;
         }
 
-        self.getNumColumns = function() {
-            return Math.floor(self.width / self.div_width);
-        }
-
-        self.getLeftMargin = function(columns) {
-            return (self.width - (columns * self.div_width)) / 2;
-        }
-
         self.addResults = function(items) {
-            var columns = self.getNumColumns();
-            var left_margin = self.getLeftMargin(columns);
-            var index_offset = self.lives().length;
-            var div_container = this.div_container;
+            var indexOffset = self.lives().length;
 
             $.each(items, function(index, value) {
                 var link = typeof value.link !== 'undefined' ? value.link : '/data_objects/' + value.object_id;
@@ -103,14 +172,10 @@
                 var name = typeof value.filename !== 'undefined' ? value.name : '';
                 var life = new LifeViewModel(link, value.source, filename, name);
 
-                var row = Math.floor((index_offset + index) / columns);
-                var column = (index_offset + index) % columns;
-
-                var div_left = left_margin + column * self.div_width;
-                var div_top = self.top_margin + row * self.div_width;
-
-                life.left(div_left);
-                life.top(div_top);
+                self.layout.getPositionForItemIndex(indexOffset + index, function(left, top) {
+                    life.left(left);
+                    life.top(top);
+                });
 
                 self.lives.push(life);
             });
@@ -121,15 +186,10 @@
         self.search_term = "*";
         self.collection_id = null;
 
-        self.width = 0;
         self.max_items = -1;
 
-        // TODO: Can this be moved out to the view to connect to ViewModel?
-        self.div_width = 160;
-        self.top_margin = 50;
-
         self.initialize = function(width, search_term, collection_id) {
-            self.width = width;
+            self.layout.resize(width);
             self.search_term = search_term;
             self.collection_id = collection_id;
             self.padWithLoadingCells();
@@ -138,23 +198,17 @@
         self.modalOpen = ko.observable(false);
 
         self.resize = function(width) {
-            if (self.width == width || self.modalOpen()) {
+            self.layout.resize(width);
+
+            if (self.modalOpen()) {
                 return;
             }
-            self.width = width;
-
-            var columns = self.getNumColumns();
-            var left_margin = self.getLeftMargin(columns);
 
             $.each(self.lives(), function(index, value) {
-                var row = Math.floor(index / columns);
-                var column = index % columns;
-
-                var div_left = left_margin + column * self.div_width;
-                var div_top = self.top_margin + row * self.div_width;
-
-                value.left(div_left);
-                value.top(div_top);
+                self.layout.getPositionForItemIndex(index, function(left, top) {
+                    value.left(left);
+                    value.top(top);
+                });
             });
 
             self.padWithLoadingCells();
@@ -167,25 +221,18 @@
                 return;
             }
 
-            var columns = self.getNumColumns();
-            var start_col = self.lives().length % columns;
-            var num_loading = columns - start_col;
-            var last_row = Math.floor(self.lives().length / columns);
-
-            // Figure out how to layout the loading cells based on number of items already loaded
-            var left_margin = this.getLeftMargin(columns);
-            for (var i = 0; i < num_loading; i++) {
-                var div_left = left_margin + (start_col + i) * self.div_width;
-                var div_top = self.top_margin + last_row * self.div_width;
-
-                self.loading.push(new LoadingViewModel(div_left, div_top));
+            var lastRow = self.layout.getLastRow(self.lives().length);
+            var lastColumn = self.layout.getLastColumn(self.lives().length);
+            var numLoadingCells = self.layout.getNumPadding(self.lives().length);
+            for (var i = 0; i < numLoadingCells; i++) {
+                self.layout.getPositionForRowColumn(lastRow, lastColumn + i, function(left, top) {
+                    self.loading.push(new LoadingViewModel(left, top));
+                });
             }
         }
 
         self.contentHeight = ko.computed(function() {
-            var columns = self.getNumColumns();
-            var rows = (self.lives().length + self.loading().length) / columns;
-            return rows * self.div_width;
+            return self.layout.getContentHeight(self.lives().length + self.loading().length);
         });
 
         self.collect = function(life, click, action) {
@@ -220,20 +267,15 @@
 
         self.pageOffset = 0;
         self.onScroll = function(position) {
+            self.layout.updatePosition(position);
+
             // Don't save progress for anything other than index
             if (self.collection_id != null || self.search_term != "*") {
                 return;
             }
 
-            // Figure out which row of items we're at
-            var row = Math.floor((position - self.top_margin) / self.div_width);
-            if (row < 0) {
-                return;
-            }
-
-            var columns = self.getNumColumns();
-            var num_items = columns * (row + 1);
-            var page = Math.ceil(num_items / 25) + Math.max(0, self.pageOffset - 1);
+            var page = self.layout.getCurrentPage();
+            page += Math.max(0, self.pageOffset - 1);
 
             if (page > self.furthestPage) {
                 self.furthestPage = page;
@@ -241,6 +283,8 @@
             }
         }
     }
+
+    var viewModel = new MainPageViewModel();
 
     // "with: someExpression" is equivalent to "template: { if: someExpression, data: someExpression }"
     ko.bindingHandlers['with'] = {
