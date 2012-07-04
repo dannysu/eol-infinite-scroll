@@ -39,6 +39,7 @@
         var self = this;
 
         self.width = 0;
+        self.height = 0;
 
         // TODO: Can this be moved out to the view to connect to ViewModel?
         self.div_width = 160;
@@ -54,11 +55,12 @@
             return (self.width - (columns * self.div_width)) / 2;
         }
 
-        self.resize = function(width) {
-            if (self.width == width) {
+        self.resize = function(width, height) {
+            if (self.width == width && self.height == height) {
                 return;
             }
             self.width = width;
+            self.height = height;
             self.columns = self.getNumColumns();
             self.left_margin = self.getLeftMargin(self.columns);
         }
@@ -66,6 +68,10 @@
         self.position = 0;
         self.updatePosition = function(position) {
             self.position = position;
+        }
+
+        self.getNumRows = function() {
+            return Math.ceil((self.height - self.top_margin) / self.div_width);
         }
 
         self.getCurrentRow = function() {
@@ -188,8 +194,8 @@
 
         self.max_items = -1;
 
-        self.initialize = function(width, search_term, collection_id) {
-            self.layout.resize(width);
+        self.initialize = function(width, height, search_term, collection_id) {
+            self.layout.resize(width, height);
             self.search_term = search_term;
             self.collection_id = collection_id;
             self.padWithLoadingCells();
@@ -197,8 +203,8 @@
 
         self.modalOpen = ko.observable(false);
 
-        self.resize = function(width) {
-            self.layout.resize(width);
+        self.resize = function(width, height) {
+            self.layout.resize(width, height);
 
             if (self.modalOpen()) {
                 return;
@@ -269,11 +275,13 @@
         self.onScroll = function(position) {
             self.layout.updatePosition(position);
 
-            // Don't save progress for anything other than index
-            if (self.collection_id != null || self.search_term != "*") {
-                return;
+            // Only save progress for show all page
+            if (self.collection_id == null && self.search_term == "*") {
+                self.saveProgress();
             }
+        }
 
+        self.saveProgress = function() {
             var page = self.layout.getCurrentPage();
             page += Math.max(0, self.pageOffset - 1);
 
@@ -302,7 +310,7 @@
 
                 $(element).on('hidden', function() {
                     viewModel.modalOpen(false);
-                    viewModel.resize($(document).width());
+                    viewModel.resize($(document).width(), $(window).height());
                     viewModel.selectedItem(null);
                 });
             }
@@ -315,7 +323,7 @@
     // Notify view model of browser resize so that the layout can be responsive
     // 20px to account for scrollbar
     $(window).resize(function() {
-        viewModel.resize($(document).width() - 20);
+        viewModel.resize($(document).width() - 20, $(window).height());
     });
 
     var hasPageStored = false;
@@ -342,7 +350,7 @@
         viewModel.furthestPage = parseInt(localStorage.furthestPage);
         viewModel.pageOffset = viewModel.furthestPage;
     }
-    viewModel.initialize($(window).width(), search_term, collection_id);
+    viewModel.initialize($(window).width(), $(window).height(), search_term, collection_id);
 
     // Start by fetching 3 pages
     viewModel.getNextPage(true);
