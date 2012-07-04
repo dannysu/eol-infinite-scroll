@@ -186,7 +186,6 @@
                 self.lives.push(life);
             });
 
-            self.onScroll(self.layout.position);
             self.padWithLoadingCells();
         }
 
@@ -199,7 +198,6 @@
             self.layout.resize(width, height);
             self.search_term = search_term;
             self.collection_id = collection_id;
-            self.onScroll(self.layout.position);
             self.padWithLoadingCells();
         }
 
@@ -219,7 +217,6 @@
                 });
             });
 
-            self.onScroll(self.layout.position);
             self.padWithLoadingCells();
         }
 
@@ -274,29 +271,9 @@
             self.collect(self.selectedItem(), null, 'remove');
         }
 
-        self.viewableRow = ko.observable(-1);
-        self.viewables = ko.observableArray([]);
-
         self.pageOffset = 0;
         self.onScroll = function(position) {
             self.layout.updatePosition(position);
-
-            var currentRow = self.layout.getCurrentRow();
-
-            var numRowsOnScreen = self.layout.getNumRows();
-            var numColumnsOnScreen = self.layout.getNumColumns();
-
-            var startIndex = currentRow * numColumnsOnScreen;
-            var relevantItems = self.lives().slice(startIndex, startIndex + (numRowsOnScreen + 2) * numColumnsOnScreen);
-
-            if (relevantItems.length != self.viewables().length || currentRow != self.viewableRow()) {
-                self.viewables.removeAll();
-                self.viewableRow(currentRow);
-
-                for (var i = 0; i < relevantItems.length; i++) {
-                    self.viewables.push(relevantItems[i]);
-                }
-            }
 
             // Only save progress for show all page
             if (self.collection_id == null && self.search_term == "*") {
