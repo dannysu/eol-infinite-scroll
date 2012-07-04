@@ -75,11 +75,6 @@
                     self.max_items = data.total_items;
                     self.addResults(data.collection_items);
                     self.isLoading = false;
-
-                    if (self.collection_id == null && self.search_term == "*" && self.page > self.furthestPage) {
-                        self.furthestPage = self.page;
-                        localStorage.furthestPage = self.furthestPage;
-                    }
                 },
                 dataType: 'jsonp'
             });
@@ -222,6 +217,29 @@
         self.remove = function() {
             self.collect(self.selectedItem(), null, 'remove');
         }
+
+        self.pageOffset = 0;
+        self.onScroll = function(position) {
+            // Don't save progress for anything other than index
+            if (self.collection_id != null || self.search_term != "*") {
+                return;
+            }
+
+            // Figure out which row of items we're at
+            var row = Math.floor((position - self.top_margin) / self.div_width);
+            if (row < 0) {
+                return;
+            }
+
+            var columns = self.getNumColumns();
+            var num_items = columns * (row + 1);
+            var page = Math.ceil(num_items / 25) + Math.max(0, self.pageOffset - 1);
+
+            if (page > self.furthestPage) {
+                self.furthestPage = page;
+                localStorage.furthestPage = self.furthestPage;
+            }
+        }
     }
 
     // "with: someExpression" is equivalent to "template: { if: someExpression, data: someExpression }"
@@ -269,15 +287,16 @@
     } else if (query.indexOf("?collection=") >= 0) {
         collection_id = query.substring(query.indexOf("?collection=") + "?collection=".length);
     } else if (query.indexOf("?continue=1") >= 0 && hasPageStored) {
-        viewModel.page = Math.max(0, (parseInt(localStorage.furthestPage) - 6));
+        viewModel.page = Math.max(0, (parseInt(localStorage.furthestPage) - 1));
     } else if (query.indexOf("?reset=") >= 0) {
         localStorage.furthestPage = query.substring(query.indexOf("?reset=") + "?reset=".length);
-        viewModel.page = parseInt(localStorage.furthestPage);
+        viewModel.page = Math.max(0, (parseInt(localStorage.furthestPage) - 1));
         hasPageStored = true;
     }
 
     if (hasPageStored) {
         viewModel.furthestPage = parseInt(localStorage.furthestPage);
+        viewModel.pageOffset = viewModel.furthestPage;
     }
     viewModel.initialize($(window).width(), search_term, collection_id);
 
@@ -293,6 +312,7 @@
                 viewModel.getNextPage(true);
             }
         }
+        viewModel.onScroll($(document).scrollTop());
     });
 
 })();
