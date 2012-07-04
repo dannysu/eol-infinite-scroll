@@ -284,6 +284,7 @@
         self.saveProgress = function() {
             var page = self.layout.getCurrentPage();
             page += Math.max(0, self.pageOffset - 1);
+            console.log(page + " vs " + self.furthestPage);
 
             if (page > self.furthestPage) {
                 self.furthestPage = page;
@@ -340,7 +341,7 @@
         collection_id = query.substring(query.indexOf("?collection=") + "?collection=".length);
     } else if (query.indexOf("?continue=1") >= 0 && hasPageStored) {
         viewModel.page = Math.max(0, (parseInt(localStorage.furthestPage) - 1));
-        viewModel.pageOffset = viewModel.furthestPage;
+        viewModel.pageOffset = parseInt(localStorage.furthestPage);
     } else if (query.indexOf("?reset=") >= 0) {
         localStorage.furthestPage = query.substring(query.indexOf("?reset=") + "?reset=".length);
         viewModel.page = Math.max(0, (parseInt(localStorage.furthestPage) - 1));
