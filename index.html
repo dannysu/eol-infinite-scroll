@@ -51,7 +51,7 @@
         </div>
     </div>
     <div data-bind="foreach: loading">
-        <div class="cell" data-bind="style: { left: (left() + 'px'), top: (top() + 'px') }">
+        <div class="cell" data-bind="visible: visible(), style: { left: (left() + 'px'), top: (top() + 'px') }">
             <div class="loading">
                 <img src="loading.gif">
             </div>

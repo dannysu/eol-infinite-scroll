@@ -33,6 +33,7 @@
         var self = this;
         self.left = ko.observable(left);
         self.top = ko.observable(top);
+        self.visible = ko.observable(true);
     }
 
     function Layout() {
@@ -224,19 +225,33 @@
         }
 
         self.padWithLoadingCells = function() {
-            self.loading.removeAll();
-
             if (self.max_items >= 0 && self.lives().length >= self.max_items) {
+                self.loading.removeAll();
                 return;
             }
 
             var lastRow = self.layout.getLastRow(self.lives().length);
             var lastColumn = self.layout.getLastColumn(self.lives().length);
             var numLoadingCells = self.layout.getNumPadding(self.lives().length);
+
             for (var i = 0; i < numLoadingCells; i++) {
                 self.layout.getPositionForRowColumn(lastRow, lastColumn + i, function(left, top) {
-                    self.loading.push(new LoadingViewModel(left, top));
+                    if (i + 1 <= self.loading().length) {
+                        self.loading()[i].visible(true);
+                        self.loading()[i].left(left);
+                        self.loading()[i].top(top);
+                    }
+                    else {
+                        self.loading.push(new LoadingViewModel(left, top));
+                    }
                 });
+            }
+
+            // Need to hide the ones that aren't needed
+            if (numLoadingCells < self.loading().length) {
+                for (var i = numLoadingCells; i < self.loading().length; i++) {
+                    self.loading()[i].visible(false);
+                }
             }
         }
 
