@@ -284,7 +284,6 @@
         self.saveProgress = function() {
             var page = self.layout.getCurrentPage();
             page += Math.max(0, self.pageOffset - 1);
-            console.log(page + " vs " + self.furthestPage);
 
             if (page > self.furthestPage) {
                 self.furthestPage = page;
