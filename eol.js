@@ -7,19 +7,19 @@
             return self.link.replace('/data_objects/', '');
         });
 
-        self.smallImage = image;
+        self.smallImage = ko.observable(image);
         self.mediumImage = ko.computed(function() {
-            var url = self.smallImage.replace('_88_88', '_130_130');
+            var url = self.smallImage().replace('_88_88', '_130_130');
             url = url.replace('_orig', '_130_130');
             return url;
         });
         self.largeImage = ko.computed(function() {
-            var url = self.smallImage.replace('_88_88', '_580_360');
+            var url = self.smallImage().replace('_88_88', '_580_360');
             url = url.replace('_orig', '_580_360');
             return url;
         });
         self.fullSizeImage = ko.computed(function() {
-            return self.smallImage.replace('_88_88', '');
+            return self.smallImage().replace('_88_88', '');
         });
 
         self.filename = filename;
@@ -305,11 +305,20 @@
             var relevantItems = self.lives().slice(startIndex, startIndex + (numRowsOnScreen + 2) * numColumnsOnScreen);
 
             if (relevantItems.length != self.viewables().length || currentRow != self.viewableRow()) {
-                self.viewables.removeAll();
                 self.viewableRow(currentRow);
 
+                var diff = relevantItems.length - self.viewables().length;
+                for (var i = 0; i < diff; i++) {
+                    self.viewables.push(new LifeViewModel('', '', '', ''));
+                }
+
                 for (var i = 0; i < relevantItems.length; i++) {
-                    self.viewables.push(relevantItems[i]);
+                    self.viewables()[i].link = relevantItems[i].link;
+                    self.viewables()[i].filename = relevantItems[i].filename;
+                    self.viewables()[i].name = relevantItems[i].name;
+                    self.viewables()[i].smallImage(relevantItems[i].smallImage());
+                    self.viewables()[i].left(relevantItems[i].left());
+                    self.viewables()[i].top(relevantItems[i].top());
                 }
             }
 
