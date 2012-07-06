@@ -3,30 +3,18 @@
         var self = this;
 
         self.link = link;
-        self.id = ko.computed(function() {
-            return self.link.replace('/data_objects/', '');
-        });
+        self.id = link.replace('/data_objects/', '');
 
-        self.smallImage = ko.observable(image);
-        self.mediumImage = ko.computed(function() {
-            var url = self.smallImage().replace('_88_88', '_130_130');
-            url = url.replace('_orig', '_130_130');
-            return url;
-        });
-        self.largeImage = ko.computed(function() {
-            var url = self.smallImage().replace('_88_88', '_580_360');
-            url = url.replace('_orig', '_580_360');
-            return url;
-        });
-        self.fullSizeImage = ko.computed(function() {
-            return self.smallImage().replace('_88_88', '');
-        });
+        self.smallImage = image;
+        self.mediumImage = image.replace('_88_88', '_130_130').replace('_orig', '_130_130');
+        self.largeImage = image.replace('_88_88', '_580_360').replace('_orig', '_580_360');
+        self.fullSizeImage = image.replace('_88_88', '');
 
         self.filename = filename;
         self.name = name;
 
-        self.left = ko.observable(0);
-        self.top = ko.observable(0);
+        self.left = 0;
+        self.top = 0;
     }
 
     function LoadingViewModel(left, top) {
@@ -180,8 +168,8 @@
                 var life = new LifeViewModel(link, value.source, filename, name);
 
                 self.layout.getPositionForItemIndex(indexOffset + index, function(left, top) {
-                    life.left(left);
-                    life.top(top);
+                    life.left = left;
+                    life.top = top;
                 });
 
                 self.lives.push(life);
@@ -215,8 +203,8 @@
 
             $.each(self.lives(), function(index, value) {
                 self.layout.getPositionForItemIndex(index, function(left, top) {
-                    value.left(left);
-                    value.top(top);
+                    value.left = left;
+                    value.top = top;
                 });
             });
 
@@ -313,12 +301,7 @@
                 }
 
                 for (var i = 0; i < relevantItems.length; i++) {
-                    self.viewables()[i].link = relevantItems[i].link;
-                    self.viewables()[i].filename = relevantItems[i].filename;
-                    self.viewables()[i].name = relevantItems[i].name;
-                    self.viewables()[i].smallImage(relevantItems[i].smallImage());
-                    self.viewables()[i].left(relevantItems[i].left());
-                    self.viewables()[i].top(relevantItems[i].top());
+                    self.viewables.replace(self.viewables()[i], relevantItems[i]);
                 }
             }
 

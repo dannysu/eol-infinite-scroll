@@ -44,7 +44,7 @@
     </div>
 
     <div data-bind="foreach: viewables, style: { height: contentHeight()+'px' }">
-        <div class="cell" data-bind="style: { left: (left() + 'px'), top: (top() + 'px') }, click: $root.selectItem">
+        <div class="cell" data-bind="style: { left: (left + 'px'), top: (top + 'px') }, click: $root.selectItem">
             <div class="life">
                 <img data-bind="attr: { src: mediumImage }">
             </div>
@@ -69,14 +69,6 @@
             </a>
         </div>
         <div class="modal-footer">
-            <!-- EOL Collection is down
-            <form action="http://eol.org/collection_items" target="crossDomainForm" method="post">
-                <input name="collection_item[object_id]" type="hidden" data-bind="value: id()">
-                <input name="collection_item[object_type]" type="hidden" value="DataObject">
-                <input name="collection_id[]" type="hidden" value="31473">
-                <input class="btn btn-primary" type="submit" value="Collect!">
-            </form>
-            -->
             <div data-bind="style: { display: $root.statusMessage() == '' ? 'block' : 'none' }">
                 <a class="btn btn-primary" data-bind="click: $root.collect, style: { display: $root.collection_id ? 'none' : 'block' }">Collect!</a>
                 <a class="btn btn-primary" data-bind="click: $root.remove, style: { display: $root.collection_id == 31473 ? 'block' : 'none' }">Remove</a>
@@ -87,10 +79,6 @@
         </div>
     </div>
 
-    <!--
-    <iframe class="crossDomainForm" name="crossDomainForm">
-    </iframe>
-    -->
     <script src="eol.js"></script>
 </body>
 
