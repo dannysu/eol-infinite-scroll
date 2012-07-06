@@ -277,7 +277,7 @@
             self.collect(self.selectedItem(), null, 'remove');
         }
 
-        self.viewableRow = ko.observable(-1);
+        self.viewableRow = -1;
         self.viewables = ko.observableArray([]);
 
         self.pageOffset = 0;
@@ -292,8 +292,8 @@
             var startIndex = currentRow * numColumnsOnScreen;
             var relevantItems = self.lives().slice(startIndex, startIndex + (numRowsOnScreen + 2) * numColumnsOnScreen);
 
-            if (relevantItems.length != self.viewables().length || currentRow != self.viewableRow()) {
-                self.viewableRow(currentRow);
+            if (relevantItems.length != self.viewables().length || currentRow != self.viewableRow) {
+                self.viewableRow = currentRow;
 
                 var diff = relevantItems.length - self.viewables().length;
                 for (var i = 0; i < diff; i++) {
