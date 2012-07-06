@@ -175,7 +175,7 @@
                 self.lives.push(life);
             });
 
-            self.onScroll(self.layout.position);
+            self.onScroll(self.layout.position, true, false);
             self.padWithLoadingCells();
         }
 
@@ -188,7 +188,7 @@
             self.layout.resize(width, height);
             self.search_term = search_term;
             self.collection_id = collection_id;
-            self.onScroll(self.layout.position);
+            self.onScroll(self.layout.position, true, true);
             self.padWithLoadingCells();
         }
 
@@ -208,7 +208,7 @@
                 });
             });
 
-            self.onScroll(self.layout.position);
+            self.onScroll(self.layout.position, true, true);
             self.padWithLoadingCells();
         }
 
@@ -281,7 +281,7 @@
         self.viewables = ko.observableArray([]);
 
         self.pageOffset = 0;
-        self.onScroll = function(position) {
+        self.onScroll = function(position, hasChanges, forceRefresh) {
             self.layout.updatePosition(position);
 
             var currentRow = self.layout.getCurrentRow();
@@ -292,16 +292,24 @@
             var startIndex = currentRow * numColumnsOnScreen;
             var relevantItems = self.lives().slice(startIndex, startIndex + (numRowsOnScreen + 2) * numColumnsOnScreen);
 
-            if (relevantItems.length != self.viewables().length || currentRow != self.viewableRow) {
+            if (hasChanges || relevantItems.length != self.viewables().length || currentRow != self.viewableRow) {
                 self.viewableRow = currentRow;
 
-                var diff = relevantItems.length - self.viewables().length;
-                for (var i = 0; i < diff; i++) {
-                    self.viewables.push(new LifeViewModel('', '', '', ''));
+                if (forceRefresh) {
+                    self.viewables.removeAll();
+                    for (var i = 0; i < relevantItems.length; i++) {
+                        self.viewables.push(relevantItems[i]);
+                    }
                 }
+                else {
+                    var diff = relevantItems.length - self.viewables().length;
+                    for (var i = 0; i < diff; i++) {
+                        self.viewables.push(new LifeViewModel('', '', '', ''));
+                    }
 
-                for (var i = 0; i < relevantItems.length; i++) {
-                    self.viewables.replace(self.viewables()[i], relevantItems[i]);
+                    for (var i = 0; i < relevantItems.length; i++) {
+                        self.viewables.replace(self.viewables()[i], relevantItems[i]);
+                    }
                 }
             }
 
@@ -394,7 +402,7 @@
                 viewModel.getNextPage(true);
             }
         }
-        viewModel.onScroll($(document).scrollTop());
+        viewModel.onScroll($(document).scrollTop(), false, false);
     });
 
 })();
