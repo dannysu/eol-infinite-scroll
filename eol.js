@@ -24,24 +24,24 @@
         self.visible = ko.observable(true);
     }
 
-    function Layout() {
+    function Layout(itemDimension, itemsPerPage, topMargin) {
         var self = this;
 
         self.width = 0;
         self.height = 0;
 
-        // TODO: Can this be moved out to the view to connect to ViewModel?
-        self.div_width = 160;
-        self.top_margin = 50;
+        self.itemDimension = itemDimension;
+        self.topMargin = topMargin;
+        self.itemsPerPage = itemsPerPage;
 
         self.columns = 0;
         self.getNumColumns = function() {
-            return Math.floor(self.width / self.div_width);
+            return Math.floor(self.width / self.itemDimension);
         }
 
-        self.left_margin = 0;
+        self.leftMargin = 0;
         self.getLeftMargin = function(columns) {
-            return (self.width - (columns * self.div_width)) / 2;
+            return (self.width - (columns * self.itemDimension)) / 2;
         }
 
         self.resize = function(width, height) {
@@ -51,7 +51,7 @@
             self.width = width;
             self.height = height;
             self.columns = self.getNumColumns();
-            self.left_margin = self.getLeftMargin(self.columns);
+            self.leftMargin = self.getLeftMargin(self.columns);
         }
 
         self.position = 0;
@@ -60,11 +60,11 @@
         }
 
         self.getNumRows = function() {
-            return Math.ceil((self.height - self.top_margin) / self.div_width);
+            return Math.ceil((self.height - self.topMargin) / self.itemDimension);
         }
 
         self.getCurrentRow = function() {
-            var row = Math.floor((self.position - self.top_margin) / self.div_width);
+            var row = Math.floor((self.position - self.topMargin) / self.itemDimension);
             return Math.max(0, row);
         }
 
@@ -75,7 +75,7 @@
         self.getCurrentPage = function() {
             var columns = self.getNumColumns();
             var num_items = columns * (self.getCurrentRow() + 1);
-            var page = Math.ceil(num_items / 25);
+            var page = Math.ceil(num_items / self.itemsPerPage);
             return page;
         }
 
@@ -83,22 +83,22 @@
             var row = Math.floor(index / self.columns);
             var column = index % self.columns;
 
-            var div_left = self.left_margin + column * self.div_width;
-            var div_top = self.top_margin + row * self.div_width;
+            var left = self.leftMargin + column * self.itemDimension;
+            var top = self.topMargin + row * self.itemDimension;
 
-            updateFn(div_left, div_top);
+            updateFn(left, top);
         }
 
         self.getPositionForRowColumn = function(row, col, updateFn) {
-            var div_left = self.left_margin + col * self.div_width;
-            var div_top = self.top_margin + row * self.div_width;
+            var left = self.leftMargin + col * self.itemDimension;
+            var top = self.topMargin + row * self.itemDimension;
 
-            updateFn(div_left, div_top);
+            updateFn(left, top);
         }
 
         self.getContentHeight = function(numItems) {
             var rows = numItems / self.columns;
-            return rows * self.div_width;
+            return rows * self.itemDimension;
         }
 
         self.getLastColumn = function(numItems) {
@@ -113,7 +113,7 @@
     function MainPageViewModel() {
         var self = this;
 
-        self.layout = new Layout();
+        self.layout = new Layout(160, 25, 50);
 
         self.lives = ko.observableArray([]);
         self.loading = ko.observableArray([]);
