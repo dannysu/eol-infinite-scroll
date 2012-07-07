@@ -129,7 +129,7 @@
         self.getNextPage = function(force_load) {
             force_load = typeof force_load !== 'undefined' ? force_load : false;
 
-            if (self.isLoading && !force_load) {
+            if ((self.isLoading && !force_load) || self.noMoreItems) {
                 return false;
             }
 
@@ -158,6 +158,7 @@
             return true;
         }
 
+        self.noMoreItems = false;
         self.addResults = function(items) {
             var indexOffset = self.lives().length;
 
@@ -174,6 +175,10 @@
 
                 self.lives.push(life);
             });
+
+            if (self.max_items >= 0 && self.lives().length >= self.max_items) {
+                self.noMoreItems = true;
+            }
 
             self.onScroll(self.layout.position, true, false);
             self.padWithLoadingCells();
@@ -213,7 +218,7 @@
         }
 
         self.padWithLoadingCells = function() {
-            if (self.max_items >= 0 && self.lives().length >= self.max_items) {
+            if (self.noMoreItems) {
                 self.loading.removeAll();
                 return;
             }
