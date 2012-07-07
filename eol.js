@@ -312,8 +312,38 @@
                         self.viewables.push(new LifeViewModel('', '', '', ''));
                     }
 
+                    var left = [];
+                    var free = [];
                     for (var i = 0; i < relevantItems.length; i++) {
-                        self.viewables.replace(self.viewables()[i], relevantItems[i]);
+                        free.push(true);
+                    }
+
+                    for (var i = 0; i < relevantItems.length; i++) {
+                        var found = false;
+                        for (var j = 0; j < self.viewables().length; j++) {
+                            if (self.viewables()[j].id == relevantItems[i].id) {
+                                if (self.viewables()[j].left != relevantItems[i].left ||
+                                    self.viewables()[j].top != relevantItems[i].top) {
+                                    self.viewables.replace(self.viewables()[i], relevantItems[i]);
+                                }
+                                free[j] = false;
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (!found) {
+                            left.push(relevantItems[i]);
+                        }
+                    }
+
+                    for (var i = 0; i < left.length; i++) {
+                        for (var j = 0; j < free.length; j++) {
+                            if (free[j]) {
+                                self.viewables.replace(self.viewables()[j], left[i]);
+                                free[j] = false;
+                                break;
+                            }
+                        }
                     }
                 }
             }
