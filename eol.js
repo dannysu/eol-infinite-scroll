@@ -60,11 +60,14 @@
         }
 
         self.getNumRows = function() {
-            return Math.ceil((self.height - self.topMargin) / self.itemDimension);
+            // Take the floor which gives number of rows that can be shown completely,
+            // then add 2 to account for the fact that top and bottom can show a bit of
+            // the rows above and below.
+            return Math.floor((self.height - self.topMargin) / self.itemDimension) + 2;
         }
 
         self.getCurrentRow = function() {
-            var row = Math.floor((self.position - self.topMargin) / self.itemDimension);
+            var row = Math.floor(self.position / self.itemDimension);
             return Math.max(0, row);
         }
 
@@ -162,18 +165,29 @@
         self.addResults = function(items) {
             var indexOffset = self.lives().length;
 
+            var count = 0;
             $.each(items, function(index, value) {
                 var link = typeof value.link !== 'undefined' ? value.link : '/data_objects/' + value.object_id;
                 var filename = typeof value.filename !== 'undefined' ? value.filename : value.name;
                 var name = typeof value.filename !== 'undefined' ? value.name : '';
                 var life = new LifeViewModel(link, value.source, filename, name);
 
-                self.layout.getPositionForItemIndex(indexOffset + index, function(left, top) {
+                self.layout.getPositionForItemIndex(indexOffset + count, function(left, top) {
                     life.left = left;
                     life.top = top;
                 });
 
-                self.lives.push(life);
+                var found = false;
+                for (var i = 0; i < self.lives().length; i++) {
+                    if (self.lives()[i].id == life.id) {
+                        found = true;
+                    }
+                }
+
+                if (!found) {
+                    self.lives.push(life);
+                    count++;
+                }
             });
 
             if (self.max_items >= 0 && self.lives().length >= self.max_items) {
@@ -295,7 +309,7 @@
             var numColumnsOnScreen = self.layout.getNumColumns();
 
             var startIndex = currentRow * numColumnsOnScreen;
-            var relevantItems = self.lives().slice(startIndex, startIndex + (numRowsOnScreen + 2) * numColumnsOnScreen);
+            var relevantItems = self.lives().slice(startIndex, startIndex + numRowsOnScreen * numColumnsOnScreen);
 
             if (hasChanges || relevantItems.length != self.viewables().length || currentRow != self.viewableRow) {
                 self.viewableRow = currentRow;
