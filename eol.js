@@ -138,10 +138,10 @@
 
             self.page += 1;
 
-            var url = 'http://dannysu.com/eol/api.php?q='+self.search_term+'&page='+self.page+'&callback=?';
+            var url = 'http://eol-api.dannysu.com/api?q='+self.search_term+'&page='+self.page+'&callback=?';
             if (self.collection_id != null) {
                 if (self.collection_id == '31473') {
-                    url = 'http://dannysu.com/eol/fav.php?page='+self.page;
+                    url = 'http://eol-api.dannysu.com/fav?page='+self.page;
                 } else {
                     url = 'http://eol.org/api/collections/1.0/'+self.collection_id+'.json?per_page=25&page='+self.page+'&callback=?';
                 }
@@ -268,7 +268,7 @@
 
         self.collect = function(life, click, action) {
             var action = typeof action !== 'undefined' ? action : 'add';
-            var url = 'http://dannysu.com/eol/fav.php?';
+            var url = 'http://eol-api.dannysu.com/fav?';
             url += 'link='+encodeURI(life.link);
             url += '&image='+encodeURI(life.smallImage);
             url += '&filename='+encodeURI(life.filename);
